@@ -42,18 +42,18 @@ app.get("/admin/getAllData", (req, res, next) => {
   //Logic to fetch all data
   throw Error("jadbfbd");
 });
-app.use("/", (err, req, res, next) => {
-  if (err) {
-    res.status(500).send("Something is fked up");
-  }
-});
+
 app.delete("/admin/deleteUser", (req, res) => {
   //Logic to delete a user data
   res.send("Deleted a user..");
 });
 
 //generic error handling:
-
+app.use("/", (err, req, res, next) => {
+    if (err) {
+      res.status(500).send("Something is fked up");
+    }
+  }); //always at the end
 app.listen(3000, () => {
   console.log("Successfully listening on port 3000...");
 }); // we created a server and started to listen on port 3000
