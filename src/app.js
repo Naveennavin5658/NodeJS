@@ -15,6 +15,16 @@ app.use("/health-check-test2", (req, res) => {
   res.send("Health check route path 2 passed...");
 });
 
+app.use("/test-route", (req, res) => {
+  console.log(req.query);
+  res.send("Learning query obj controllers....", req.query);
+});
+
+app.use("/test-route-1/:id/:name/:pwd", (req, res) => {
+  console.log(req.params.name);
+  res.send("Learning query params access in controllers....", req.params);
+});
+
 // app.use((req, res) => {
 //   res.send("Anonymus route passed...");
 // });
