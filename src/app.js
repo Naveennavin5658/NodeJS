@@ -38,15 +38,22 @@ app.use("/testuser", [
 
 app.use("/admin", adminAuth);
 
-app.get("/admin/ ", (req, res) => {
+app.get("/admin/getAllData", (req, res, next) => {
   //Logic to fetch all data
-  res.send("All data sent..");
+  throw Error("jadbfbd");
 });
-
+app.use("/", (err, req, res, next) => {
+  if (err) {
+    res.status(500).send("Something is fked up");
+  }
+});
 app.delete("/admin/deleteUser", (req, res) => {
   //Logic to delete a user data
   res.send("Deleted a user..");
 });
+
+//generic error handling:
+
 app.listen(3000, () => {
   console.log("Successfully listening on port 3000...");
 }); // we created a server and started to listen on port 3000
