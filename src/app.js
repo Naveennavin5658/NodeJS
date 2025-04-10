@@ -1,5 +1,5 @@
 const express = require("express"); // we are importing a C library lol!
-
+const { adminAuth } = require(".//middlewares/auth");
 const app = express(); //we are creating an express JS app literally with a line of code!
 //Order of routing matters a lot!!!
 //app.use will match all http methods be it GET or POST or PUT or DELETE
@@ -32,6 +32,21 @@ app.use("/testuser", [
     // next();
   },
 ]);
+
+//the route handler that calls next() is basically a middleware
+// whatever request is there, passes through a sequence of middlewares and reaches the request handler
+
+app.use("/admin", adminAuth);
+
+app.get("/admin/ ", (req, res) => {
+  //Logic to fetch all data
+  res.send("All data sent..");
+});
+
+app.delete("/admin/deleteUser", (req, res) => {
+  //Logic to delete a user data
+  res.send("Deleted a user..");
+});
 app.listen(3000, () => {
   console.log("Successfully listening on port 3000...");
 }); // we created a server and started to listen on port 3000
