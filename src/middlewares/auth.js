@@ -11,3 +11,4 @@ const adminAuth = (req, res, next) => {
 module.exports = {
   adminAuth,
 };
+//mongodb+srv://Naveen:Naveen@cluster0.h5lqydk.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
