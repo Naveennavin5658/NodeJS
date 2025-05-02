@@ -17,6 +17,29 @@ app.post("/signup", async (req, res) => {
     res.status(400).send({ message: "Something went wrong.." });
   }
 });
+// Get user by email
+app.get("/get-user", async (req, res) => {
+  email = req.body.email;
+  try {
+    const dbResp = await User.find({ emailId: email });
+    if (dbResp.length < 1) {
+      res.status(404).send({ message: "User not found" });
+    } else {
+      res.status(200).send({ message: dbResp });
+    }
+  } catch (e) {
+    res.status(400).send({ message: "dbResp" });
+  }
+});
+//Feed the user
+app.get("/feed", async (req, res) => {
+  try {
+    const allUsers = await User.find({});
+    res.status(200).send({ message: allUsers });
+  } catch {
+    res.status(400).send({ message: "dbResp" });
+  }
+});
 connectDB()
   .then(() => {
     console.log("DB connection successful");
