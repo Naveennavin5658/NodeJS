@@ -5,7 +5,7 @@ const app = express();
 const User = require("./models/user");
 
 app.use(express.json());
-
+//Register a user
 app.post("/signup", async (req, res) => {
   user_payload = req.body;
 
@@ -17,9 +17,11 @@ app.post("/signup", async (req, res) => {
     res.status(400).send({ message: "Something went wrong.." });
   }
 });
+
 // Get user by email
 app.get("/get-user", async (req, res) => {
   email = req.body.email;
+  //#!TODO: Make sure email remains unique
   try {
     const dbResp = await User.find({ emailId: email });
     if (dbResp.length < 1) {
@@ -31,6 +33,7 @@ app.get("/get-user", async (req, res) => {
     res.status(400).send({ message: "dbResp" });
   }
 });
+
 //Feed the user
 app.get("/feed", async (req, res) => {
   try {
@@ -40,6 +43,40 @@ app.get("/feed", async (req, res) => {
     res.status(400).send({ message: "dbResp" });
   }
 });
+
+//Update data of the user
+app.patch("/user", async (req, res) => {
+  try {
+    const userRequest = req.body;
+    console.log(userRequest);
+    const dbResponse = await User.findOneAndUpdate(
+      { _id: userRequest._id },
+      userRequest,
+      {
+        returnDocument: "before",
+      }
+    );
+    console.log("Befoore update", dbResponse);
+    res.status(200).send("Update success");
+  } catch {
+    res.status(404).send("Update user failed!");
+  }
+});
+
+//Delete a user
+app.delete("/user", async (req, res) => {
+  try {
+    const mongoId = req.body.userId;
+    const delResp = await User.findByIdAndDelete({ _id: mongoId });
+
+    console.log("Deleted Response: ", delResp);
+    res.status(200).send({ message: "User Deleted Successfully" });
+  } catch {
+    res.status(400).send({ message: "Delete Operation failed" });
+  }
+});
+
+// Health check locally & DB Connection check
 connectDB()
   .then(() => {
     console.log("DB connection successful");
