@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const validator = require("validator");
 const userSchema = new mongoose.Schema(
   {
     firstName: {
@@ -18,7 +19,7 @@ const userSchema = new mongoose.Schema(
       lowercase: true,
       trim: true,
       validate(email) {
-        if (!email.includes("@") || !email.includes(".com")) {
+        if (!validator.isEmail(email)) {
           throw new Error("Invalid email");
         }
       },
@@ -30,9 +31,8 @@ const userSchema = new mongoose.Schema(
       maxLength: 20,
       trim: true,
       validate(pass) {
-        const resp = /^[a-z0-9]+$/i.test(pass);
-        if (!resp) {
-          throw new Error("Password must be alphanumeric!");
+        if (!validator.isStrongPassword(pass)) {
+          throw new Error("Enter a strong password!");
         }
       },
     },
@@ -52,6 +52,11 @@ const userSchema = new mongoose.Schema(
     photoUrl: {
       type: String,
       default: "https://i.pravatar.cc/250?u=mail@ashallendesign.co.uk",
+      validate(value) {
+        if (!validator.isURL(value)) {
+          throw new Error("Invalid photo url");
+        }
+      },
     },
     bio: {
       type: String,

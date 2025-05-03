@@ -2,10 +2,13 @@ function validateUserUpdateFields(allowedUpdates) {
   return (req, res, next) => {
     const userBody = req.body;
     const updateKeys = Object.keys(userBody);
-    const skills = userBody.skills;
-    const uniqueSkills = new Set(skills);
-    if(skills.length!=uniqueSkills.length){
+    const userSkills = userBody.skills;
+    const uniqueSkills = {};
+    for (const skill of userSkills) {
+      if (uniqueSkills[skill]) {
         return res.status(400).send("User cannot have duplicate skills");
+      }
+      uniqueSkills[skill] = true;
     }
     for (let i = 0; i < updateKeys.length; i++) {
       if (!allowedUpdates.includes(updateKeys[i])) {
