@@ -3,7 +3,7 @@ const connectDB = require("./config/database");
 const app = express();
 
 const User = require("./models/user");
-
+const validateUserUpdateFields = require("./middlewares/validateUpdateFields");
 app.use(express.json());
 //Register a user
 app.post("/signup", async (req, res) => {
@@ -43,24 +43,36 @@ app.get("/feed", async (req, res) => {
     res.status(400).send({ message: e });
   }
 });
+const allowedUserUpdates = [
+  "photoUrl",
+  "bio",
+  "gender",
+  "age",
+  "skills",
+  "email",
+];
 
 //Update data of the user
-app.patch("/user", async (req, res) => {
-  try {
+app.patch(
+  "/user/:userId",
+  validateUserUpdateFields(allowedUserUpdates),
+  async (req, res) => {
     const userRequest = req.body;
-    console.log(userRequest);
-    const dbResponse = await User.findOneAndUpdate(
-      { _id: userRequest._id },
-      userRequest,
+    const userId = req.params?.userId;
+    try {
+      const dbResponse = await User.findOneAndUpdate(
+        { _id: userId },
+        userRequest,
 
-      { returnDocument: "before", runValidators: true }
-    );
-    console.log("Befoore update", dbResponse);
-    res.status(200).send("Update success");
-  } catch (err) {
-    res.status(404).send({ message: err });
+        { returnDocument: "before", runValidators: true }
+      );
+      console.log("Before update", dbResponse);
+      res.status(200).send("Update success");
+    } catch (err) {
+      res.status(404).send({ message: err });
+    }
   }
-});
+);
 
 //Delete a user
 app.delete("/user", async (req, res) => {
