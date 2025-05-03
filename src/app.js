@@ -1,16 +1,30 @@
 const express = require("express");
+const bcrypt = require("bcrypt");
 const connectDB = require("./config/database");
 const app = express();
 
 const User = require("./models/user");
 const validateUserUpdateFields = require("./middlewares/validateUpdateFields");
+const validateSingupData = require("./utils/validation");
 app.use(express.json());
 //Register a user
 app.post("/signup", async (req, res) => {
-  user_payload = req.body;
-
-  const userInstance = new User(user_payload);
   try {
+    //Validation of data
+    validateSingupData(req);
+
+    //Encrypt the user password
+    const passwordHash = await bcrypt.hash(req.body.password, 10);
+    
+    const { firstName, lastName, emailId, password } = req.body;
+    const userInstance = new User({
+      firstName,
+      lastName,
+      emailId,
+      password: passwordHash,
+    });
+   
+
     await userInstance.save(); //returns a promise
     res.status(201).send({ message: "User record inserted successfully!" });
   } catch (err) {
