@@ -14,7 +14,7 @@ app.post("/signup", async (req, res) => {
     await userInstance.save(); //returns a promise
     res.status(201).send({ message: "User record inserted successfully!" });
   } catch (err) {
-    res.status(400).send({ message: "Something went wrong.." });
+    res.status(400).send({ message: err });
   }
 });
 
@@ -30,7 +30,7 @@ app.get("/get-user", async (req, res) => {
       res.status(200).send({ message: dbResp });
     }
   } catch (e) {
-    res.status(400).send({ message: "dbResp" });
+    res.status(400).send({ message: e });
   }
 });
 
@@ -39,8 +39,8 @@ app.get("/feed", async (req, res) => {
   try {
     const allUsers = await User.find({});
     res.status(200).send({ message: allUsers });
-  } catch {
-    res.status(400).send({ message: "dbResp" });
+  } catch (err) {
+    res.status(400).send({ message: e });
   }
 });
 
@@ -52,14 +52,13 @@ app.patch("/user", async (req, res) => {
     const dbResponse = await User.findOneAndUpdate(
       { _id: userRequest._id },
       userRequest,
-      {
-        returnDocument: "before",
-      }
+
+      { returnDocument: "before", runValidators: true }
     );
     console.log("Befoore update", dbResponse);
     res.status(200).send("Update success");
-  } catch {
-    res.status(404).send("Update user failed!");
+  } catch (err) {
+    res.status(404).send({ message: err });
   }
 });
 
@@ -71,8 +70,8 @@ app.delete("/user", async (req, res) => {
 
     console.log("Deleted Response: ", delResp);
     res.status(200).send({ message: "User Deleted Successfully" });
-  } catch {
-    res.status(400).send({ message: "Delete Operation failed" });
+  } catch (e) {
+    res.status(400).send({ message: e });
   }
 });
 
