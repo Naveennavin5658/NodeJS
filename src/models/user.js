@@ -5,9 +5,11 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
       minLength: 4,
+      maxLength: 50,
     },
     lastName: {
       type: String,
+      maxLength: 50,
     },
     emailId: {
       type: String,
@@ -15,10 +17,24 @@ const userSchema = new mongoose.Schema(
       unique: true,
       lowercase: true,
       trim: true,
+      validate(email) {
+        if (!email.includes("@") || !email.includes(".com")) {
+          throw new Error("Invalid email");
+        }
+      },
     },
     password: {
       type: String,
       required: true,
+      minLength: 6,
+      maxLength: 20,
+      trim: true,
+      validate(pass) {
+        const resp = /^[a-z0-9]+$/i.test(pass);
+        if (!resp) {
+          throw new Error("Password must be alphanumeric!");
+        }
+      },
     },
     age: {
       type: Number,
@@ -43,6 +59,7 @@ const userSchema = new mongoose.Schema(
     },
     skills: {
       type: [String],
+      required: true,
     },
   },
   { timestamps: true }
