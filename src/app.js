@@ -1,23 +1,26 @@
 const express = require("express");
 const bcrypt = require("bcrypt");
 const validator = require("validator");
+
 const connectDB = require("./config/database");
 const app = express();
 
 const User = require("./models/user");
 const validateUserUpdateFields = require("./middlewares/validateUpdateFields");
 const validateSingupData = require("./utils/validation");
+const cookieParser = require("cookie-parser");
+const jwt = require("jsonwebtoken");
 app.use(express.json());
+app.use(cookieParser());
 //Register a user
 app.post("/signup", async (req, res) => {
   try {
     //Validation of data
     validateSingupData(req);
-
-    //Encrypt the user password
-    const passwordHash = await bcrypt.hash(req.body.password, 10);
-
     const { firstName, lastName, emailId, password } = req.body;
+    //Encrypt the user password
+    const passwordHash = await bcrypt.hash(password, 10);
+
     const userInstance = new User({
       firstName,
       lastName,
@@ -41,19 +44,42 @@ app.post("/login", async (req, res) => {
       throw new Error("Invalid credentials");
     }
     const userData = await User.findOne({ emailId: emailId });
-    console.log("Naveen", userData);
     if (!userData) {
       throw new Error("Invalid credentials");
     }
-
     const isPasswordValid = await bcrypt.compare(password, userData?.password);
     if (isPasswordValid) {
+      const token = jwt.sign(
+        { _id: userData._id },
+        "Random secret private Key"
+      );
+      res.cookie("token", token);
       res.status(200).send({ message: "User login successful!!" });
     } else {
       throw new Error("Entered password is not correct..");
     }
   } catch (err) {
     res.status(400).send({ message: err.message || err.toString() });
+  }
+});
+
+//Sample profile API
+app.get("/profile", async (req, res) => {
+  const cookies = req.cookies;
+
+  try {
+    const { token } = cookies;
+    // Validate my token
+
+    const decodedMessage = await jwt.verify(token, "Random secret private Key");
+
+    const { _id } = decodedMessage;
+
+    const userData = await User.findOne({ _id: _id });
+
+    res.status(200).send({ message: userData });
+  } catch (e) {
+    res.status(400).send({ message: e });
   }
 });
 
@@ -105,7 +131,7 @@ app.patch(
 
         { returnDocument: "before", runValidators: true }
       );
-      console.log("Before update", dbResponse);
+
       res.status(200).send("Update success");
     } catch (err) {
       res.status(404).send({ message: err });
@@ -119,7 +145,6 @@ app.delete("/user", async (req, res) => {
     const mongoId = req.body.userId;
     const delResp = await User.findByIdAndDelete({ _id: mongoId });
 
-    console.log("Deleted Response: ", delResp);
     res.status(200).send({ message: "User Deleted Successfully" });
   } catch (e) {
     res.status(400).send({ message: e });
