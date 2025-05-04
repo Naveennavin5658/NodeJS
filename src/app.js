@@ -44,19 +44,15 @@ app.post("/login", async (req, res) => {
     if (!validator.isEmail(emailId)) {
       throw new Error("Invalid credentials");
     }
-    const userData = await User.findOne({ emailId: emailId });
-    if (!userData) {
+    const user = await User.findOne({ emailId: emailId });
+    if (!user) {
       throw new Error("Invalid credentials");
     }
-    const isPasswordValid = await bcrypt.compare(password, userData?.password);
+    const isPasswordValid = await user.validatePassword(password);
     if (isPasswordValid) {
-      const token = jwt.sign(
-        { _id: userData._id },
-        "Random secret private Key",
-        { expiresIn: "1d" }
-      );
+      const token = await user.getJWT();
       res.cookie("token", token, {
-        expires: new Date(Date.now() + 8 * 3600000 ),
+        expires: new Date(Date.now() + 8 * 3600000),
       });
       res.status(200).send({ message: "User login successful!!" });
     } else {
