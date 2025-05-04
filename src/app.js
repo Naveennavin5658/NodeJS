@@ -8,6 +8,7 @@ const app = express();
 const User = require("./models/user");
 const validateUserUpdateFields = require("./middlewares/validateUpdateFields");
 const validateSingupData = require("./utils/validation");
+const { userAuth } = require("./middlewares/auth");
 const cookieParser = require("cookie-parser");
 const jwt = require("jsonwebtoken");
 app.use(express.json());
@@ -51,9 +52,12 @@ app.post("/login", async (req, res) => {
     if (isPasswordValid) {
       const token = jwt.sign(
         { _id: userData._id },
-        "Random secret private Key"
+        "Random secret private Key",
+        { expiresIn: "1d" }
       );
-      res.cookie("token", token);
+      res.cookie("token", token, {
+        expires: new Date(Date.now() + 8 * 3600000 ),
+      });
       res.status(200).send({ message: "User login successful!!" });
     } else {
       throw new Error("Entered password is not correct..");
@@ -64,19 +68,9 @@ app.post("/login", async (req, res) => {
 });
 
 //Sample profile API
-app.get("/profile", async (req, res) => {
-  const cookies = req.cookies;
-
+app.get("/profile", userAuth, async (req, res) => {
   try {
-    const { token } = cookies;
-    // Validate my token
-
-    const decodedMessage = await jwt.verify(token, "Random secret private Key");
-
-    const { _id } = decodedMessage;
-
-    const userData = await User.findOne({ _id: _id });
-
+    const userData = req.userData;
     res.status(200).send({ message: userData });
   } catch (e) {
     res.status(400).send({ message: e });
@@ -84,7 +78,7 @@ app.get("/profile", async (req, res) => {
 });
 
 // Get user by email
-app.get("/get-user", async (req, res) => {
+app.get("/get-user", userAuth, async (req, res) => {
   email = req.body.email;
   //#!TODO: Make sure email remains unique
   try {
@@ -100,7 +94,7 @@ app.get("/get-user", async (req, res) => {
 });
 
 //Feed the user
-app.get("/feed", async (req, res) => {
+app.get("/feed", userAuth, async (req, res) => {
   try {
     const allUsers = await User.find({});
     res.status(200).send({ message: allUsers });
@@ -120,6 +114,7 @@ const allowedUserUpdates = [
 //Update data of the user
 app.patch(
   "/user/:userId",
+  userAuth,
   validateUserUpdateFields(allowedUserUpdates),
   async (req, res) => {
     const userRequest = req.body;
@@ -140,7 +135,7 @@ app.patch(
 );
 
 //Delete a user
-app.delete("/user", async (req, res) => {
+app.delete("/user", userAuth, async (req, res) => {
   try {
     const mongoId = req.body.userId;
     const delResp = await User.findByIdAndDelete({ _id: mongoId });
