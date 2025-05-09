@@ -14,4 +14,32 @@ const validateSingupData = (req) => {
     throw new Error("Enter a strong password!!!!");
   }
 };
-module.exports = validateSingupData;
+
+const validateProfileEditData = (req) => {
+  const allowedEditFields = [
+    "firstName",
+    "lastName",
+    "photoUrl",
+    "bio",
+    "age",
+    "gender",
+    "skills",
+  ];
+  console.log("Inside validating user edit.....", Object.keys(req.body));
+  let editAllowed = true;
+
+  for (const field of Object.keys(req.body)) {
+    if (!allowedEditFields.includes(field)) {
+      editAllowed = false;
+      break;
+    }
+  }
+  if (editAllowed) {
+    console.log("Editing is allowed..");
+    return true;
+  } else {
+    console.log("Edit fucked up!");
+    return false;
+  }
+};
+module.exports = { validateSingupData, validateProfileEditData };

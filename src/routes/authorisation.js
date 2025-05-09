@@ -5,12 +5,13 @@ const User = require("../models/user");
 const bcrypt = require("bcrypt");
 const validator = require("validator");
 const jwt = require("jsonwebtoken");
-const validateSingupData = require("../utils/validation");
+const { validateSingupData } = require("../utils/validation");
 //Register a user
 authRouter.post("/signup", async (req, res) => {
   try {
     //Validation of data
     validateSingupData(req);
+    console.log("User body validated!");
     const { firstName, lastName, emailId, password } = req.body;
     //Encrypt the user password
     const passwordHash = await bcrypt.hash(password, 10);
@@ -25,6 +26,7 @@ authRouter.post("/signup", async (req, res) => {
     await userInstance.save(); //returns a promise
     res.status(201).send({ message: "User record inserted successfully!" });
   } catch (err) {
+    console.log(err);
     res.status(400).send({ message: err });
   }
 });
@@ -55,4 +57,15 @@ authRouter.post("/login", async (req, res) => {
     res.status(400).send({ message: err.message || err.toString() });
   }
 });
+
+//Logout API
+authRouter.post("/logout", async (req, res) => {
+  try {
+    res.cookie("token", null, { expires: new Date(Date.now()) });
+    res.status(200).send({ message: "Successfully Logged Out!" });
+  } catch (e) {
+    res.status(400).send({ message: "Logout failed!!!" });
+  }
+});
+
 module.exports = authRouter;
