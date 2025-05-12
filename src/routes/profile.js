@@ -1,9 +1,12 @@
 const express = require("express");
 
 const profileRouter = express.Router();
-
+const bcrypt = require("bcrypt");
 const { userAuth } = require("../middlewares/auth");
-const { validateProfileEditData } = require("../utils/validation");
+const {
+  validateProfileEditData,
+  validateOldAndNewPasswords,
+} = require("../utils/validation");
 //Sample profile API
 profileRouter.get("/profile/view", userAuth, async (req, res) => {
   try {
@@ -28,6 +31,33 @@ profileRouter.patch("/profile/edit", userAuth, async (req, res) => {
     res.send({ message: "Profile updated sucessfully!", data: loggedInUser });
   } catch (e) {
     res.status(400).send({ message: e });
+  }
+});
+
+//Update Password
+profileRouter.patch("/profile/update-password", userAuth, async (req, res) => {
+  try {
+    const loggedInUserDetails = req.userData;
+    console.log("We have the user details on server details...");
+    if (
+      req.body.existingPassword === null ||
+      req.body.existingPassword === ""
+    ) {
+      throw new Error("Existing password cannot be null or empty string");
+    }
+    const updateBoolean = await validateOldAndNewPasswords(req);
+
+    if (!updateBoolean) {
+      throw new Error(
+        "Either user entered password is not matched or new password is not strong!"
+      );
+    }
+
+    loggedInUserDetails.password = await bcrypt.hash(req.body.newPassword, 10);
+    await loggedInUserDetails.save();
+    res.status(200).send({ message: "Password update successful" });
+  } catch (e) {
+    res.status(400).send({ message: "Update password failed as " + e });
   }
 });
 
