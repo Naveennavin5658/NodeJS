@@ -20,8 +20,8 @@ POST /request/review/accept/:requestId
 POST /request/review/reject/:requestId
 
 -user Router
-GET /user/connections
 GET /user/requests/received
+GET /user/connections
 GET /user/feed -fetches profiles of other users of the platform
 
 Status: Ignored,Interested,Accepted,Rejected
