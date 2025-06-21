@@ -20,7 +20,7 @@ userRouter.get("/requests/received", userAuth, async (req, res) => {
           status: 0,
         }
       )
-      .populate("fromUserId", ["firstName", "lastName", "bio"]);
+      .populate("fromUserId", ["firstName", "lastName", "bio","photoUrl","age","gender"]);
     res.status(200).json({
       message: "Data fetched successfully!",
       data: interestedRequests,
@@ -40,8 +40,25 @@ userRouter.get("/connections", userAuth, async (req, res) => {
         $or: [{ fromUserId: loggedInUser._id }, { toUserId: loggedInUser._id }],
         status: "accepted",
       })
-      .populate("fromUserId", ["firstName", "lastName", "bio"])
-      .populate("toUserId", ["firstName", "lastName", "bio"]);
+      .populate("fromUserId", [
+        "firstName",
+        "lastName",
+        "bio",
+        "photoUrl",
+        "skills",
+        "age",
+        "gender",
+      ])
+      .populate("toUserId", [
+        "firstName",
+        "lastName",
+        "bio",
+
+        "photoUrl",
+        "skills",
+        "age",
+        "gender",
+      ]);
 
     const filteredRequests = connectionsList.map((row) => {
       if (row.fromUserId._id.toString() === loggedInUser._id.toString()) {
@@ -72,7 +89,7 @@ userRouter.get("/feed", userAuth, async (req, res) => {
   try {
     const loggedInUser = req.userData;
     const page = parseInt(req.query.page) || 1;
-    let limit = parseInt(req.query.limit) || 1;
+    let limit = parseInt(req.query.limit) || 100;
     limit = limit > 50 ? 50 : limit;
     const skip = (page - 1) * limit;
     const connectionRequests = await connectionRequest.find({
@@ -83,15 +100,12 @@ userRouter.get("/feed", userAuth, async (req, res) => {
       hiddenUserProfiles.add(req.fromUserId);
       hiddenUserProfiles.add(req.toUserId);
     });
-    const filteredFeedDocs = await User.find(
-      {
-        $and: [
-          { _id: { $nin: Array.from(hiddenUserProfiles) } },
-          { _id: { $ne: loggedInUser._id } },
-        ],
-      },
-      { password: 0, createdAt: 0, updatedAt: 0, __v: 0 }
-    )
+    const filteredFeedDocs = await User.find({
+      $and: [
+        { _id: { $nin: Array.from(hiddenUserProfiles) } },
+        { _id: { $ne: loggedInUser._id } },
+      ],
+    })
       .skip(skip)
       .limit(limit);
     return res.status(200).json({

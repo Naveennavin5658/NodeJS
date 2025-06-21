@@ -24,7 +24,7 @@ authRouter.post("/signup", async (req, res) => {
     });
 
     await userInstance.save(); //returns a promise
-    res.status(201).send({ message: "User record inserted successfully!" });
+    res.status(201).send({ message: "User record inserted successfully!",data:userInstance });
   } catch (err) {
     console.log(err);
     res.status(400).send({ message: err });
@@ -49,9 +49,9 @@ authRouter.post("/login", async (req, res) => {
       res.cookie("token", token, {
         expires: new Date(Date.now() + 8 * 3600000),
       });
-      res.status(200).send({ message: "User login successful!!" });
+      res.status(200).send({ message: "User login successful!!", data: user });
     } else {
-      throw new Error("Entered password is not correct..");
+      res.status(401).send({ message: "Incorrect password!!" });
     }
   } catch (err) {
     res.status(400).send({ message: err.message || err.toString() });
