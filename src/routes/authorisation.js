@@ -24,7 +24,16 @@ authRouter.post("/signup", async (req, res) => {
     });
 
     await userInstance.save(); //returns a promise
-    res.status(201).send({ message: "User record inserted successfully!",data:userInstance });
+    const token = await userInstance.getJWT();
+    res.cookie("token", token, {
+      expires: new Date(Date.now() + 8 * 3600000),
+    });
+    res
+      .status(201)
+      .send({
+        message: "User record inserted successfully!",
+        data: userInstance,
+      });
   } catch (err) {
     console.log(err);
     res.status(400).send({ message: err });

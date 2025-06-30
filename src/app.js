@@ -17,7 +17,7 @@ const requestsRouter = require("./routes/requests");
 const userRouter = require("./routes/user");
 app.use("/", authRouter);
 app.use("/", profileRouter);
-app.use("/request", requestsRouter);
+app.use("/", requestsRouter);
 app.use("/user", userRouter);
 // Health check locally & DB Connection check
 connectDB()
